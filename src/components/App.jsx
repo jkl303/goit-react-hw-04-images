@@ -8,9 +8,9 @@ import { Loader } from './Loader/Loader';
 import { Button } from './Button/Button';
 
 export class App extends Component {
-  state = { q: null, isLoading: false, error: null, imgs: [] };
+  state = { q: null, page: 1, isLoading: false, error: null, imgs: [] };
 
-  search = async e => {
+  search = (e) => {console.log(e.target.elements.input.value);
     e.preventDefault();
     this.setState({
       q: e.target.elements.input.value,
@@ -21,19 +21,26 @@ export class App extends Component {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   }
 
-  // componentDidUpdate = async () => {
-  //   try {
-  //     this.setState({ isLoading: true });
-  //     const imgs = await fetchImgs(this.state.q, this.state.page);
-  //     this.setState({ imgs: imgs.hits });
-  //   } catch {
-  //     this.setState({
-  //       error: 'Something went wrong. Try again',
-  //     });
-  //   } finally {
-  //     this.setState({ isLoading: false });
-  //   }
-  // };
+  fetch = async () => {
+    try {
+      this.setState({ isLoading: true });
+      const imgs = await fetchImgs(this.state.q, this.state.page);
+      this.setState({ imgs: imgs.hits });
+    } catch {
+      this.setState({
+        error: 'Something went wrong. Try again',
+      });
+    } finally {
+      this.setState({ isLoading: false });
+    }
+  }
+
+  componentDidUpdate = (_, prevState) => {
+    if (prevState.imgs !== this.state.imgs) {
+      const imgs = this.fetch();
+      this.setState({ imgs })
+     }
+  };
 
   render() {
     const { imgs, error, isLoading } = this.state;
