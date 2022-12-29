@@ -8,38 +8,57 @@ import { Loader } from './Loader/Loader';
 import { Button } from './Button/Button';
 
 export class App extends Component {
-  state = { q: null, page: 1, isLoading: false, error: null, imgs: [] };
+  state = {
+    q: null,
+    page: 1,
+    isLoading: false,
+    error: null,
+    imgs: [],
+  };
 
-  search = (e) => {console.log(e.target.elements.input.value);
-    e.preventDefault();
+  search = q => {
     this.setState({
-      q: e.target.elements.input.value,
+      q,
+      page: 1,
     });
   };
 
-  loadMore() {
+  loadMore = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
-  }
+  };
 
-  fetch = async () => {
-    try {
-      this.setState({ isLoading: true });
-      const imgs = await fetchImgs(this.state.q, this.state.page);
-      this.setState({ imgs: imgs.hits });
-    } catch {
-      this.setState({
-        error: 'Something went wrong. Try again',
-      });
-    } finally {
-      this.setState({ isLoading: false });
+  componentDidUpdate = async (_, prevState) => {
+    const { q, page } = this.state;
+
+    if (prevState.q !== q || prevState.page !== page) {
+      try {
+        this.setState({ isLoading: true });
+        const imgs = await fetchImgs(q, page);
+        if (imgs.totalHits === 0) {
+          alert(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+        } else {
+          page > 1
+            ? this.setState(prevState => ({
+                imgs: [...prevState.imgs, ...imgs.hits],
+              }))
+            : this.setState({ imgs: imgs.hits });
+        }
+      } catch {
+        this.setState({
+          error: 'Something went wrong. Please try again.',
+        });
+      } finally {
+        this.setState({ isLoading: false });
+      }
     }
-  }
+  };
 
-  componentDidUpdate = (_, prevState) => {
-    if (prevState.imgs !== this.state.imgs) {
-      const imgs = this.fetch();
-      this.setState({ imgs })
-     }
+  toggleImageModal = () => {
+    this.setState(prevState => ({
+      isImageModalOpen: !prevState.isImageModalOpen,
+    }));
   };
 
   render() {
@@ -51,7 +70,8 @@ export class App extends Component {
           {this.state.imgs.map(img => (
             <li className="ImageGalleryItem" key={img.id}>
               <ImageGalleryItem
-                src={img.webformatURL}
+                img={img.webformatURL}
+                largeImg={img.largeImageURL}
                 alt={img.tags}
               ></ImageGalleryItem>
             </li>

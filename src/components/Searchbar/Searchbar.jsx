@@ -1,7 +1,17 @@
 export const Searchbar = ({ onSubmit }) => {
+  const handleSubmit = e => {
+    e.preventDefault();
+    const val = e.target.elements.input.value;
+    if (val === '') {
+      alert('Type something!');
+    } else {
+      onSubmit(val);
+    }
+  };
+
   return (
     <header className="Searchbar">
-      <form className="SearchForm" onSubmit={onSubmit}>
+      <form className="SearchForm" onSubmit={handleSubmit}>
         <button type="submit" className="SearchForm-button">
           <span className="SearchForm-button-label">Search</span>
         </button>
