@@ -6,6 +6,7 @@ export const Searchbar = ({ onSubmit }) => {
       alert('Type something!');
     } else {
       onSubmit(val);
+      e.target.elements.input.value = '';
     }
   };
 

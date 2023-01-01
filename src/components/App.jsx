@@ -14,6 +14,7 @@ export class App extends Component {
     isLoading: false,
     error: null,
     imgs: [],
+    total: 1,
   };
 
   search = q => {
@@ -32,7 +33,9 @@ export class App extends Component {
 
     if (prevState.q !== q || prevState.page !== page) {
       try {
-        this.setState({ isLoading: true });
+        this.setState({
+          isLoading: true,
+        });
         const imgs = await fetchImgs(q, page);
         if (imgs.totalHits === 0) {
           alert(
@@ -42,15 +45,18 @@ export class App extends Component {
           page > 1
             ? this.setState(prevState => ({
                 imgs: [...prevState.imgs, ...imgs.hits],
+                total: imgs.totalHits,
               }))
-            : this.setState({ imgs: imgs.hits });
+            : this.setState({ imgs: imgs.hits, total: imgs.totalHits });
         }
       } catch {
         this.setState({
           error: 'Something went wrong. Please try again.',
         });
       } finally {
-        this.setState({ isLoading: false });
+        this.setState({
+          isLoading: false,
+        });
       }
     }
   };
@@ -62,7 +68,7 @@ export class App extends Component {
   };
 
   render() {
-    const { imgs, error, isLoading } = this.state;
+    const { imgs, error, page, isLoading, total } = this.state;
     return (
       <div>
         <Searchbar onSubmit={this.search}></Searchbar>
@@ -79,7 +85,9 @@ export class App extends Component {
           {isLoading && <Loader></Loader>}
           {error && <p>{error}</p>}
         </ImageGallery>
-        {imgs.length > 0 && <Button onClick={this.loadMore}></Button>}
+        {imgs.length > 0 && page < total / 12 && (
+          <Button onClick={this.loadMore}></Button>
+        )}
       </div>
     );
   }
